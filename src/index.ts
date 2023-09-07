@@ -11,17 +11,17 @@ app.get('/api/images', (req, res, next) => {
 });
 
 const mw1 = async (req: Request, res: Response, next: NextFunction) => {
-    if(await middleware.readParams(req, res, next)) {
-        mw3(req, res, next);
-    }
+    console.log("next middleware called in mw1");
     middleware.readParams(req, res, next);
 }
 
 const mw2 = (req: Request, res: Response, next: NextFunction) => {
+    console.log("next middleware called in mw2");
     middleware.resizeImage(req, res, next);
 }
 
 const mw3 = (req: Request, res: Response, next: NextFunction) => {
+    console.log("next middleware called in mw3");
     middleware.sendImage(req, res, next);
 }
 

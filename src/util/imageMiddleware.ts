@@ -13,15 +13,29 @@ interface CustomRequest extends Request {
     filepath?: string;
 }
 
-async function fileExists(filename: string): Promise<boolean> {
+class NoFilenameError extends Error {
+    constructor() {
+        super('No Filename given');
+        this.name = 'NoFilenameError';
+    }
+}
+
+class NoFileExistsError extends Error {
+    constructor() {
+        super('No File Exists');
+        this.name = 'NoFileExistsError';
+    }
+}
+
+//check if filename already exists in thumbs folder
+async function fileExistsInThumbs(filename: string, width: string, height: string): Promise<boolean> {
     let check: boolean = true;
+    let filepath: string = `${filename}${width}x${height}_thumbs` + '.jpg';
     try {
-        await fs.access(`public/assets/img/thumbs/${filename}_thumbs.jpg`, fs.constants.F_OK);
+        await fs.access(`public/assets/img/thumbs/${filepath}`, fs.constants.F_OK);
     } catch (err: NodeJS.ErrnoException | unknown ) {
         if(err && (err as NodeJS.ErrnoException).code === 'ENOENT') {
-            console.error('File does not exist');
             check = false;
-            return check;
         } else {
             console.error('Error in File Check:', err);
         }
@@ -29,40 +43,66 @@ async function fileExists(filename: string): Promise<boolean> {
     return check;
 }
 
+//check if filename already exists in full folder
+async function fileExistsInFull(filename: string): Promise<boolean> {
+    let check: boolean = true;
+    let filepath: string = `${filename}` + '.jpg';
+    try {
+        await fs.access(`public/assets/img/full/${filepath}`, fs.constants.F_OK);
+    } catch (err: NodeJS.ErrnoException | unknown ) {
+        if(err && (err as NodeJS.ErrnoException).code === 'ENOENT') {
+            check = false;
+        } else {
+            console.error('Error in File Check:', err);
+        }
+    }
+    return check;
+}
 
+// Get all params and checks if image already in thumbs folder if yes then serve image from local storage
+// otherwise resize an image and save it to local storage (default 200 x 200)
 const middleware = {
 
-    async readParams(req: CustomRequest, res: Response, next: NextFunction): Promise<boolean> { 
+    async readParams(req: CustomRequest, res: Response, next: NextFunction) { 
         try {
-
             const filename = req.query.filename as string | undefined;
-            const filepath = path.join(__dirname, '../../public/assets/img/full', req.query.filename as string | undefined + '.jpg');
             const width = req.query.width as string | undefined;
             const height = req.query.height as string | undefined;
             const defaultWidth = '200';
             const defaultHeight = '200';
             
             if(!filename) {
-               throw new Error('No filename given'); 
-            }
+                throw new NoFilenameError();
+            } 
 
             req.filename = filename;
-            req.filepath = filepath as string;
             req.width = width || defaultWidth; 
             req.height = height || defaultHeight;
-
-            if(await fileExists(filename)) {
-                console.log("File exists!");
-                return true;
+            const filepath = path.join(__dirname, '../../public/assets/img/full', req.filename as string | undefined + '.jpg'); 
+            req.filepath = filepath as string;
+           
+            if(await fileExistsInThumbs(req.filename, req.width, req.height)) {
+                console.log("File already exists in Thumbs folder!");
+                this.sendImage(req, res, next);
+            } else {
+                if(await fileExistsInFull(req.filename)) {
+                    next();
+                } else {
+                    throw new NoFileExistsError();
+                }
             }
-  
-            next();
+
         } catch (err) {
-            console.log("Error in readParams" + err);
-            res.writeHead(404, { 'Content-Type': 'text/plain'});
-            res.end('File not found');
+            if((err as NoFilenameError).name === 'NoFilenameError') {
+                res.status(404).send('No filename');
+                return
+            } else if((err as NoFileExistsError).name === 'NoFileExistsError') {
+                res.status(404).send('File doesnt Exist');
+                return
+            }
+            console.log(err);
+            return
         }
-        return false;
     },
 
     async resizeImage(req: CustomRequest, res: Response, next: NextFunction) {
@@ -73,9 +113,11 @@ const middleware = {
                 width: parseInt(req.width as string),
                 height: parseInt(req.height as string)
                 })
-                .toFile(`public/assets/img/thumbs/${req.filename}_thumbs.jpg`);
+                .toFile(`public/assets/img/thumbs/${req.filename}` + `${req.width}`+ 'x' + `${req.height}` + '_thumbs.jpg');
         } catch (error) {
             console.log("Error in resize Image:" + error);
+            res.status(404).send('Failed to resize image');
+            return
         }
         next();
     },
@@ -83,13 +125,13 @@ const middleware = {
     async sendImage(req: CustomRequest, res: Response, next: NextFunction): Promise<void> { 
         try {
             console.log("read file from harddrive");
-            req.data = await fs.readFile(path.join(__dirname, '../../public/assets/img/thumbs', req.filename + '_thumbs.jpg'));
+            req.data = await fs.readFile(path.join(__dirname, '../../public/assets/img/thumbs', req.filename + `${req.width}`+ 'x' + `${req.height}` + '_thumbs.jpg'));
             res.setHeader('Content-Type', 'image/jpeg');
             res.end(req.data);
         } catch (err) {
             console.log("Error in sendImage:" + err);
-            res.writeHead(404, { 'Content-Type': 'text/plain'});
-            res.end('File not found');
+            res.status(404).send('Failed to send image');
+            return
         }
     },
 
