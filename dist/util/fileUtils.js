@@ -35,33 +35,68 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var express_1 = __importDefault(require("express"));
-var imageMiddleware_1 = require("./util/imageMiddleware");
-var app = (0, express_1.default)();
-var port = 3000;
-app.get('/api/images', function (req, res, next) {
-    next();
-});
-var mw1 = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        imageMiddleware_1.middleware.readParams(req, res, next);
-        return [2 /*return*/];
+exports.fileExistsInFull = exports.fileExistsInThumbs = void 0;
+var fs = require('fs/promises');
+//check if filename already exists in thumbs folder
+function fileExistsInThumbs(filename, width, height) {
+    return __awaiter(this, void 0, void 0, function () {
+        var check, filepath, err_1;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    check = true;
+                    filepath = "".concat(filename).concat(width, "x").concat(height, "_thumbs") + '.jpg';
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, fs.access("public/assets/img/thumbs/".concat(filepath), fs.constants.F_OK)];
+                case 2:
+                    _a.sent();
+                    return [3 /*break*/, 4];
+                case 3:
+                    err_1 = _a.sent();
+                    if (err_1 && err_1.code === 'ENOENT') {
+                        check = false;
+                    }
+                    else {
+                        console.error('Error in File Check:', err_1);
+                    }
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/, check];
+            }
+        });
     });
-}); };
-var mw2 = function (req, res, next) {
-    imageMiddleware_1.middleware.resizeImage(req, res, next);
-};
-var mw3 = function (req, res, next) {
-    imageMiddleware_1.middleware.sendImage(req, res, next);
-};
-app.use(mw1);
-app.use(mw2);
-app.use(mw3);
-app.listen(port, function () {
-    console.log("server started at http://localhost:".concat(port));
-});
-exports.default = app;
+}
+exports.fileExistsInThumbs = fileExistsInThumbs;
+//check if filename already exists in full folder
+function fileExistsInFull(filename) {
+    return __awaiter(this, void 0, void 0, function () {
+        var check, filepath, err_2;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    check = true;
+                    filepath = "".concat(filename) + '.jpg';
+                    _a.label = 1;
+                case 1:
+                    _a.trys.push([1, 3, , 4]);
+                    return [4 /*yield*/, fs.access("public/assets/img/full/".concat(filepath), fs.constants.F_OK)];
+                case 2:
+                    _a.sent();
+                    return [3 /*break*/, 4];
+                case 3:
+                    err_2 = _a.sent();
+                    if (err_2 && err_2.code === 'ENOENT') {
+                        check = false;
+                    }
+                    else {
+                        console.error('Error in File Check:', err_2);
+                    }
+                    return [3 /*break*/, 4];
+                case 4: return [2 /*return*/, check];
+            }
+        });
+    });
+}
+exports.fileExistsInFull = fileExistsInFull;

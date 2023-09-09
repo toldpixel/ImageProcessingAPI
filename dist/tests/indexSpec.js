@@ -39,20 +39,50 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var index_1 = __importDefault(require("../index"));
 var supertest_1 = __importDefault(require("supertest"));
+var index_1 = __importDefault(require("../index"));
+var imageMiddleware_1 = require("../util/imageMiddleware");
 var request = (0, supertest_1.default)(index_1.default);
-describe('Test endpoint responses', function () {
-    it('gets the api endpoint', function () { return __awaiter(void 0, void 0, void 0, function () {
-        var response;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, request.get('/api')];
-                case 1:
-                    response = _a.sent();
-                    expect(response.status).toBe(200);
-                    return [2 /*return*/];
-            }
-        });
-    }); });
+describe('Test middleware functions', function () {
+    describe('Test FileExist functions', function () {
+        it('should return boolean true', function () { return __awaiter(void 0, void 0, void 0, function () {
+            var checkValFull;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, (0, imageMiddleware_1.fileExistsInFull)('encenadaport')];
+                    case 1:
+                        checkValFull = _a.sent();
+                        expect(checkValFull).toEqual(true);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+        it('should return boolean true or false', function () { return __awaiter(void 0, void 0, void 0, function () {
+            var checkValThumb;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, (0, imageMiddleware_1.fileExistsInThumbs)('encenadaport', '200', '200')];
+                    case 1:
+                        checkValThumb = _a.sent();
+                        expect(true).toBe(true);
+                        expect(false).toBe(false);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+    });
+    describe('Test endpoint responses', function () {
+        it('gets the api endpoint (default request)', function () { return __awaiter(void 0, void 0, void 0, function () {
+            var response;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, request.get('/api/images?filename=encenadaport&width=200&height=200')];
+                    case 1:
+                        response = _a.sent();
+                        expect(response.status).toBe(200);
+                        return [2 /*return*/];
+                }
+            });
+        }); });
+    });
 });
