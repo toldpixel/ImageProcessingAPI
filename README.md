@@ -42,3 +42,8 @@ in your browser
     - use different sizes &width=500&height=200
 
 5. Resized image output will be in thumbs folder
+
+## Endpoints and Middleware
+
+- Endpoint localhost:3000/api/images
+- 
