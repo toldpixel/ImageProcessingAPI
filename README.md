@@ -6,8 +6,7 @@
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+- [Endpoints and Middleware](#endpoints-and-middleware)
 
 
 ## Introduction
@@ -46,4 +45,6 @@ in your browser
 ## Endpoints and Middleware
 
 - Endpoint localhost:3000/api/images
-- 
+- Middleware-1: readParams(req: CustomRequest, res: Response, next: NextFunction)
+- Middleware-2: resizeImage(req: CustomRequest, res: Response, next: NextFunction) 
+- Middleware-3: sendImage(req: CustomRequest, res: Response, next: NextFunction)
