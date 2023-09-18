@@ -72,7 +72,7 @@ describe('Test middleware functions', function () {
         }); });
     });
     describe('Test endpoint responses', function () {
-        it('gets the api endpoint (default request)', function () { return __awaiter(void 0, void 0, void 0, function () {
+        it('response 200 OK (default request)', function () { return __awaiter(void 0, void 0, void 0, function () {
             var response;
             return __generator(this, function (_a) {
                 switch (_a.label) {
