@@ -28,6 +28,16 @@ An Image Processing API implemented in Node.js with endpoints for resizing image
 
 ## Usage
 
-1. Test the application with ```npm test this will create the dist/ folder
-2. Run the application with node dist/
+1. Test the application with 
+    ```sh npm test```
+    this will create the dist/ folder
+2. Run the application with 
+    ```sh node dist/```
+3. visit the url 
+```localhost:3000/api/images?filename=encenadaport&width=200&height=200```
+in your browser
 
+4. Change the parameters 
+    - use existing image names from full folder with ?filename=<image name>&width=<width size>&height=<height size>
+
+5. Resized image output will be in thumbs folder
